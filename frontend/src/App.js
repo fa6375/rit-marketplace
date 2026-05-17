@@ -1,53 +1,104 @@
-import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { Toaster } from "sonner";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Navbar } from "./components/Navbar";
+import AuthPage from "./pages/AuthPage";
+import VerifyEmail from "./pages/VerifyEmail";
+import Dashboard from "./pages/Dashboard";
+import CreateListing from "./pages/CreateListing";
+import ListingDetails from "./pages/ListingDetails";
+import MyListings from "./pages/MyListings";
+import AccountSettings from "./pages/AccountSettings";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+const Shell = ({ children }) => (
+  <div className="min-h-screen bg-[#F8F9FA]">
+    <Navbar />
+    <AnimatePresence mode="wait">{children}</AnimatePresence>
+  </div>
+);
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <BrowserRouter>
+        <Toaster
+          richColors
+          position="top-center"
+          toastOptions={{
+            style: { borderRadius: "12px", fontFamily: "inherit" },
+          }}
+        />
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <Dashboard />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <CreateListing />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit/:id"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <CreateListing editMode />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listing/:id"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <ListingDetails />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-listings"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <MyListings />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Shell>
+                  <AccountSettings />
+                </Shell>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-    </div>
+    </AuthProvider>
   );
 }
 
