@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
@@ -16,13 +16,14 @@ export default function AuthPage() {
   const location = useLocation();
   const redirect = location.state?.from?.pathname || "/";
 
-  if (user) {
+  useEffect(() => {
+    if (!user) return;
     if (!user.emailVerified) {
       navigate("/verify-email", { replace: true });
     } else {
       navigate(redirect, { replace: true });
     }
-  }
+  }, [user, navigate, redirect]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
